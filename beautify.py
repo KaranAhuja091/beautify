@@ -20,7 +20,7 @@ def main():
         if file is not None:
             # Display the beautified document with borders and background color
             st.success("Document Beautified!")
-            st.image(file, caption="Beautified Document", use_container_width=True, output_format="PDF")
+            st.image(file, caption="Beautified Document", use_column_width=True, width=None)
 
     # Check if the user has uploaded a document and beautify it if so
     if uploaded_file is not None:
