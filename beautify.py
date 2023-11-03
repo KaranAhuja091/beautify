@@ -1,6 +1,7 @@
 import streamlit as st
 import io
 from PIL import Image
+import fitz  # for handling PDFs
 
 # Set the title and page layout
 st.set_page_config(page_title="Beautify Document", layout="wide")
@@ -20,19 +21,18 @@ def main():
     # Define a function to beautify the document
     def beautify_document(file, border_color, background_color):
         if file is not None:
-            # Convert the document to an image (you will need to use a library like PyMuPDF for PDF or python-docx for DOCX)
-            # For example, using PyMuPDF to convert PDF to image:
-            # import fitz
-            # pdf_document = fitz.open(file)
-            # image_list = []
-            # for page_num in range(len(pdf_document)):
-            #     page = pdf_document[page_num]
-            #     image = page.get_pixmap()
-            #     image_bytes = image.get_png_data()
-            #     image_io = io.BytesIO(image_bytes)
-            #     image_list.append(image_io)
-
-            # Then, display the images with borders and background color
+            image_list = []  # Initialize the list of image IO objects
+            if uploaded_file.type == 'application/pdf':
+                # Handle PDF files and convert pages to images
+                pdf_document = fitz.open(file)
+                for page_num in range(len(pdf_document)):
+                    page = pdf_document.load_page(page_num)
+                    image = page.get_pixmap()
+                    image_bytes = image.get_png_data()
+                    image_io = io.BytesIO(image_bytes)
+                    image_list.append(image_io)
+            
+            # Display the images with borders and background color
             for image_io in image_list:
                 pil_image = Image.open(image_io)
                 st.image(pil_image, caption="Beautified Document", use_column_width=True, width=None)
