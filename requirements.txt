@@ -3,3 +3,4 @@ future
 python-docx
 streamlit
 openpyxl
+fitz
