@@ -4,3 +4,4 @@ python-docx
 streamlit
 openpyxl
 fitz
+frontend 
