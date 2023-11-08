@@ -1,30 +1,27 @@
 import streamlit as st
-from fpdf import FPDF
+import fitz  # PyMuPDF
 import io
 import os
 
 # Function to add a border and watermark to each page
 def add_border_and_watermark(pdf_file, output_file, watermark_text):
-    class PDFWithBorderAndWatermark(FPDF):
-        def header(self):
-            pass  # Override FPDF header method to prevent page header
+    pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    output_path = os.path.join("output", output_file)
 
-        def footer(self):
-            pass  # Override FPDF footer method to prevent page footer
+    # Create the output directory
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    pdf = PDFWithBorderAndWatermark()
-    pdf.add_page()
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
 
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=watermark_text, align="C", ln=1)
+        # Add a border
+        page.insertRect(page.MediaBox, width=20, color=(1, 1, 1), overlay=True)
 
-    pdf.set_draw_color(0)
-    pdf.rect(10, 10, 190, 277)  # Add a border (adjust the values as needed)
+        # Add a watermark
+        page.insert_text(page.MediaBox.width / 2, page.MediaBox.height / 2, watermark_text, fontname="Helvetica", fontsize=40, overlay=True)
 
-    with open(output_file, "wb") as f:
-        pdf.output(f)
-
-    return output_file
+    pdf_document.save(output_path)
+    return output_path
 
 st.title("PDF Page Border and Watermark")
 
@@ -38,7 +35,8 @@ if uploaded_file is not None:
 
     if st.button("Add Border and Watermark"):
         try:
-            output_file = add_border_and_watermark(uploaded_file, output_file, watermark_text)
+            with io.BytesIO(uploaded_file.read()) as pdf_file:
+                output_file = add_border_and_watermark(pdf_file, output_file, watermark_text)
             st.success("Border and watermark added successfully!")
             st.download_button("Download PDF", output_file)
         except Exception as e:
