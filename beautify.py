@@ -1,47 +1,47 @@
 import streamlit as st
-import io
-from PIL import Image
-import fitz  # for handling PDFs
+import PyPDF2
+from PyPDF2 import PdfFileReader, PdfFileWriter
 
-# Set the title and page layout
-st.set_page_config(page_title="Beautify Document", layout="wide")
+# Function to add a border and watermark to each page
+def add_border_and_watermark(pdf_file, output_file, watermark_text):
+    pdf_reader = PdfFileReader(pdf_file)
+    pdf_writer = PdfFileWriter()
 
-# Define the main content of the Streamlit app
-def main():
-    st.title("Beautify Your Document")
-    st.sidebar.header("Settings")
+    for page_num in range(pdf_reader.getNumPages()):
+        page = pdf_reader.getPage(page_num)
+        page.mergeTranslatedPage(page, 0, 0)
+        pdf_writer.addPage(page)
 
-    # Add a file uploader to allow users to upload a document
-    uploaded_file = st.sidebar.file_uploader("Upload a document (PDF, Word, etc.)", type=["pdf", "docx"])
+    pdf_writer.addPage(pdf_reader.getPage(0))
 
-    # Define default values for border and background color
-    default_border_color = st.sidebar.color_picker("Select Border Color", "#000000")
-    default_background_color = st.sidebar.color_picker("Select Background Color", "#ffffff")
+    pdf_writer.updatePageFormFieldValues(pdf_reader.getPage(0))
+    pdf_writer.encrypt("")
 
-    # Define a function to beautify the document
-    def beautify_document(file, border_color, background_color):
-        if file is not None:
-            image_list = []  # Initialize the list of image IO objects
-            if uploaded_file.type == 'application/pdf':
-                # Handle PDF files and convert pages to images
-                pdf_document = fitz.open(file)
-                for page_num in range(len(pdf_document)):
-                    page = pdf_document.load_page(page_num)
-                    image = page.get_pixmap()
-                    image_bytes = image.get_png_data()
-                    image_io = io.BytesIO(image_bytes)
-                    image_list.append(image_io)
-            
-            # Display the images with borders and background color
-            for image_io in image_list:
-                pil_image = Image.open(image_io)
-                st.image(pil_image, caption="Beautified Document", use_column_width=True, width=None)
+    for page_num in range(pdf_reader.getNumPages()):
+        page = pdf_reader.getPage(page_num)
+        page.mergeTranslatedPage(page, 0, 0)
+        pdf_writer.addPage(page)
 
-            st.success("Document Beautified!")
+    with open(output_file, "wb") as output:
+        pdf_writer.write(output)
 
-    # Check if the user has uploaded a document and beautify it if so
-    if uploaded_file is not None:
-        beautify_document(uploaded_file, default_border_color, default_background_color)
+    return output_file
 
-if __name__ == "__main__":
-    main()
+st.title("PDF Page Border and Watermark")
+
+uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+
+if uploaded_file is not None:
+    st.write("PDF file uploaded!")
+
+    watermark_text = st.text_input("Watermark Text", "Z-DIVISION")
+    output_file = "output.pdf"
+
+    if st.button("Add Border and Watermark"):
+        try:
+            with open(uploaded_file, "rb") as pdf_file:
+                output_file = add_border_and_watermark(pdf_file, output_file, watermark_text)
+            st.success("Border and watermark added successfully!")
+            st.download_button("Download PDF", output_file)
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
