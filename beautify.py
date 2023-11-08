@@ -1,15 +1,11 @@
 import streamlit as st
 import fitz  # PyMuPDF
 import io
-import os
 
 # Function to add a border and watermark to each page
-def add_border_and_watermark(pdf_file, output_file, watermark_text):
+def add_border_and_watermark(pdf_file, watermark_text):
     pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    output_path = os.path.join("output", output_file)
-
-    # Create the output directory
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    output_buffer = io.BytesIO()
 
     for page_num in range(len(pdf_document)):
         page = pdf_document.load_page(page_num)
@@ -20,8 +16,10 @@ def add_border_and_watermark(pdf_file, output_file, watermark_text):
         # Add a watermark
         page.insert_text(page.MediaBox.width / 2, page.MediaBox.height / 2, watermark_text, fontname="Helvetica", fontsize=40, overlay=True)
 
-    pdf_document.save(output_path)
-    return output_path
+    pdf_document.save(output_buffer, garbage=4)
+    output_buffer.seek(0)
+
+    return output_buffer
 
 st.title("PDF Page Border and Watermark")
 
@@ -31,13 +29,12 @@ if uploaded_file is not None:
     st.write("PDF file uploaded!")
 
     watermark_text = st.text_input("Watermark Text", "Z-DIVISION")
-    output_file = "output.pdf"
 
     if st.button("Add Border and Watermark"):
         try:
             with io.BytesIO(uploaded_file.read()) as pdf_file:
-                output_file = add_border_and_watermark(pdf_file, output_file, watermark_text)
+                output_buffer = add_border_and_watermark(pdf_file, watermark_text)
             st.success("Border and watermark added successfully!")
-            st.download_button("Download PDF", output_file)
+            st.download_button("Download PDF", output_buffer, key="download_pdf", file_name="output.pdf")
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
