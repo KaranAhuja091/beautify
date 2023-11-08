@@ -13,11 +13,12 @@ def add_border_and_watermark(pdf_file, output_file, watermark_text):
 
         page2 = PageObject.createBlankPage(width=page.mediaBox.getWidth(), height=page.mediaBox.getHeight())
         page2.mergePage(page)
-        page2.mergeTranslatedPage(page, 20, 20)  # Add a border (adjust the values as needed)
 
-        watermark = PageObject.createTextObject(watermark_text)
-        watermark.mergeTranslatedPage(page2, (page2.mediaBox.getWidth() - watermark.mediaBox.getWidth()) / 2, (page2.mediaBox.getHeight() - watermark.mediaBox.getHeight()) / 2)
-        page2.mergePage(watermark)
+        transformation = PageObject.createBlankPage(width=page2.mediaBox.getWidth(), height=page2.mediaBox.getHeight())
+        transformation.addTransformation(PageObject.Transformation().translate(20, 20))
+
+        page2.mergePage(transformation)
+        page2.mergeTranslatedPage(PageObject.createTextObject(watermark_text), (page2.mediaBox.getWidth() - page2.mediaBox.getWidth()) / 2, (page2.mediaBox.getHeight() - page2.mediaBox.getHeight()) / 2)
 
         pdf_writer.addPage(page2)
 
