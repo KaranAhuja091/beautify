@@ -12,12 +12,12 @@ def add_border_and_watermark(pdf_file, output_file, watermark_text):
         page = pdf_reader.pages[page_num]
 
         page2 = PageObject.create_blank_page(width=page.mediabox[2], height=page.mediabox[3])
-        page2.merge_translated_page(page, 0, 0)
-        page2.merge_translated_page(page, 20, 20)  # Add a border (adjust the values as needed)
+        page2.mergeTranslatedPage(page, 0, 0)
+        page2.mergeTranslatedPage(page, 20, 20)  # Add a border (adjust the values as needed)
 
         watermark = PageObject.create_text_object(watermark_text)
-        watermark.merge_translated_page(page2, (page2.mediabox[2] - watermark.mediabox[2]) / 2, (page2.mediabox[3] - watermark.mediabox[3]) / 2)
-        page2.merge_translated_page(watermark, 0, 0)
+        watermark.mergeTranslatedPage(page2, (page2.mediabox[2] - watermark.mediabox[2]) / 2, (page2.mediabox[3] - watermark.mediabox[3]) / 2)
+        page2.merge_page(watermark)
         pdf_writer.append_page(page2)
 
     with open(output_file, "wb") as output:
