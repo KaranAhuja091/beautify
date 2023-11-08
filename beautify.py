@@ -1,28 +1,20 @@
 import streamlit as st
-import PyPDF2
-from PyPDF2 import PdfReader, PdfWriter, PageObject
+import fitz  # PyMuPDF
 import io
 
 # Function to add a border and watermark to each page
 def add_border_and_watermark(pdf_file, output_file, watermark_text):
-    pdf_reader = PdfReader(pdf_file)
-    pdf_writer = PdfWriter()
+    pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
 
-    for page_num in range(len(pdf_reader.pages)):
-        page = pdf_reader.pages[page_num]
+        # Add a border
+        page.insertRect(page.MediaBox, width=20, color=(1, 1, 1), overlay=True)
 
-        page2 = PageObject.createBlankPage(width=page.mediaBox.getWidth(), height=page.mediaBox.getHeight())
-        page2.mergeTranslatedPage(page, 0, 0)
-        page2.mergeTranslatedPage(page, 20, 20)  # Add a border (adjust the values as needed)
+        # Add a watermark
+        page.insert_text(page.MediaBox.width / 2, page.MediaBox.height / 2, watermark_text, fontname="Helvetica", fontsize=40, overlay=True)
 
-        watermark = PageObject.createTextObject(watermark_text)
-        watermark.mergeTranslatedPage(page2, (page2.mediaBox.getWidth() - watermark.mediaBox.getWidth()) / 2, (page2.mediaBox.getHeight() - watermark.mediaBox.getHeight()) / 2)
-        page2.mergePage(watermark)
-
-        pdf_writer.appendPage(page2)
-
-    with open(output_file, "wb") as output:
-        pdf_writer.write(output)
+    pdf_document.save(output_file)
 
     return output_file
 
