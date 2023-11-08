@@ -15,11 +15,8 @@ def add_border_and_watermark(pdf_file, output_file, watermark_text):
         # Add a watermark
         page.insert_text(page.MediaBox.width / 2, page.MediaBox.height / 2, watermark_text, fontname="Helvetica", fontsize=40, overlay=True)
 
-    # Create a directory to save the file
-    output_directory = "output"
-    os.makedirs(output_directory, exist_ok=True)
-
-    output_path = os.path.join(output_directory, output_file)
+    # Save the PDF file in the current working directory
+    output_path = output_file
     pdf_document.save(output_path)
 
     return output_path
