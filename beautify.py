@@ -18,8 +18,8 @@ def add_border_and_watermark(pdf_file, output_file, watermark_text):
     return output_file
 
 # Provide your input and output file paths
-input_pdf_file = "input.pdf"
-output_pdf_file = "output.pdf"
+input_pdf_file = "C:\Users\user\Downloads\DigitalClippings_7Nov.pdf"
+output_pdf_file = "C:\Users\user\Downloads\output.pdf"
 watermark_text = "Z-DIVISION"
 
 # Usage example
