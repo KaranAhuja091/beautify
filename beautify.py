@@ -1,6 +1,7 @@
 import streamlit as st
 import fitz  # PyMuPDF
 import io
+import os
 
 # Function to add a border and watermark to each page
 def add_border_and_watermark(pdf_file, output_file, watermark_text):
@@ -14,9 +15,14 @@ def add_border_and_watermark(pdf_file, output_file, watermark_text):
         # Add a watermark
         page.insert_text(page.MediaBox.width / 2, page.MediaBox.height / 2, watermark_text, fontname="Helvetica", fontsize=40, overlay=True)
 
-    pdf_document.save(output_file)
+    # Create a directory to save the file
+    output_directory = "output"
+    os.makedirs(output_directory, exist_ok=True)
 
-    return output_file
+    output_path = os.path.join(output_directory, output_file)
+    pdf_document.save(output_path)
+
+    return output_path
 
 st.title("PDF Page Border and Watermark")
 
