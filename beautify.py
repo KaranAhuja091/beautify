@@ -1,6 +1,7 @@
 import streamlit as st
 import PyPDF2
 from PyPDF2 import PdfFileReader, PdfFileWriter
+import io
 
 # Function to add a border and watermark to each page
 def add_border_and_watermark(pdf_file, output_file, watermark_text):
@@ -39,7 +40,7 @@ if uploaded_file is not None:
 
     if st.button("Add Border and Watermark"):
         try:
-            with open(uploaded_file, "rb") as pdf_file:
+            with io.BytesIO(uploaded_file.read()) as pdf_file:
                 output_file = add_border_and_watermark(pdf_file, output_file, watermark_text)
             st.success("Border and watermark added successfully!")
             st.download_button("Download PDF", output_file)
