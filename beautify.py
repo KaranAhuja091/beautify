@@ -1,6 +1,6 @@
 import streamlit as st
 import PyPDF2
-from PyPDF2 import PdfReader, PdfWriter, PdfFileWriter, PageObject
+from PyPDF2 import PdfReader, PdfWriter, PageObject
 import io
 
 # Function to add a border and watermark to each page
@@ -11,14 +11,13 @@ def add_border_and_watermark(pdf_file, output_file, watermark_text):
     for page_num in range(len(pdf_reader.pages)):
         page = pdf_reader.pages[page_num]
 
-        page2 = PageObject.createBlankPage(width=page.MediaBox[2], height=page.MediaBox[3])
+        page2 = PageObject.createBlankPage(width=page.mediaBox[2], height=page.mediaBox[3])
         page2.mergeTranslatedPage(page, 0, 0)
-        page2.mergeTranslatedPage(page, 20, 20)  # Add border (adjust the values as needed)
+        page2.mergeTranslatedPage(page, 20, 20)  # Add a border (adjust the values as needed)
 
         watermark = PageObject.createTextObject(watermark_text)
-        watermark.mergeTranslatedPage(page2, (page2.MediaBox[2] - watermark.mediaBox[2]) / 2, (page2.MediaBox[3] - watermark.mediaBox[3]) / 2)
-        page2.merge_page(watermark)
-
+        watermark.mergeTranslatedPage(page2, (page2.mediaBox[2] - watermark.mediaBox[2]) / 2, (page2.mediaBox[3] - watermark.mediaBox[3]) / 2)
+        page2.mergeTranslatedPage(watermark, 0, 0)
         pdf_writer.append_page(page2)
 
     with open(output_file, "wb") as output:
