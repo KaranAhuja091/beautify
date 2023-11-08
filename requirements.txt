@@ -6,3 +6,4 @@ openpyxl
 fitz
 frontend 
 PyPDF2
+fpdf2
