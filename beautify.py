@@ -1,28 +1,30 @@
 import streamlit as st
-import fitz  # PyMuPDF
+from fpdf import FPDF
 import io
-import tempfile
+import os
 
 # Function to add a border and watermark to each page
-def add_border_and_watermark(pdf_file, watermark_text):
-    pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    output_path = None
+def add_border_and_watermark(pdf_file, output_file, watermark_text):
+    class PDFWithBorderAndWatermark(FPDF):
+        def header(self):
+            pass  # Override FPDF header method to prevent page header
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        for page_num in range(len(pdf_document)):
-            page = pdf_document.load_page(page_num)
+        def footer(self):
+            pass  # Override FPDF footer method to prevent page footer
 
-            # Add a border
-            page.insertRect(page.MediaBox, width=20, color=(1, 1, 1), overlay=True)
+    pdf = PDFWithBorderAndWatermark()
+    pdf.add_page()
 
-            # Add a watermark
-            page.insert_text(page.MediaBox.width / 2, page.MediaBox.height / 2, watermark_text, fontname="Helvetica", fontsize=40, overlay=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=watermark_text, align="C", ln=1)
 
-        # Save the PDF file in the temporary directory
-        output_path = os.path.join(temp_dir, "output.pdf")
-        pdf_document.save(output_path)
+    pdf.set_draw_color(0)
+    pdf.rect(10, 10, 190, 277)  # Add a border (adjust the values as needed)
 
-    return output_path
+    with open(output_file, "wb") as f:
+        pdf.output(f)
+
+    return output_file
 
 st.title("PDF Page Border and Watermark")
 
@@ -32,15 +34,12 @@ if uploaded_file is not None:
     st.write("PDF file uploaded!")
 
     watermark_text = st.text_input("Watermark Text", "Z-DIVISION")
+    output_file = "output.pdf"
 
     if st.button("Add Border and Watermark"):
         try:
-            with io.BytesIO(uploaded_file.read()) as pdf_file:
-                output_path = add_border_and_watermark(pdf_file, watermark_text)
-                if output_path:
-                    st.success("Border and watermark added successfully!")
-                    st.download_button("Download PDF", output_path)
-                else:
-                    st.error("An error occurred while processing the PDF.")
+            output_file = add_border_and_watermark(uploaded_file, output_file, watermark_text)
+            st.success("Border and watermark added successfully!")
+            st.download_button("Download PDF", output_file)
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
